@@ -16,30 +16,19 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // call backend directly
-      const res = await axios.post("http://localhost:5000/api/login", { email, password });
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/login`, {
+        email,
+        password,
+      });
 
       if (res.data.success) {
-        // ✅ Store token if available
-        if (res.data.token) {
-          localStorage.setItem("token", res.data.token);
-        }
-
         setMessage("✅ Login successful!");
-        navigate("/home");
+        setTimeout(() => navigate("/home"), 1000);
       } else {
-        setMessage("❌ " + (res.data.message || "Login failed"));
+        setMessage(`❌ ${res.data.message || "Login failed"}`);
       }
-    } catch (error) {
-      console.error("Login request failed:", error);
-
-      if (error.response && error.response.data && error.response.data.message) {
-        setMessage(`❌ ${error.response.data.message}`);
-      } else if (error.request) {
-        setMessage("❌ Network error: could not reach the server. Is backend running?");
-      } else {
-        setMessage("❌ " + (error.message || "Unknown error"));
-      }
+    } catch (err) {
+      setMessage("❌ Network error: Could not reach server.");
     } finally {
       setLoading(false);
     }
@@ -48,38 +37,13 @@ export default function Login() {
   return (
     <div className="auth-container">
       <h2>Login</h2>
-
+      {message && <div className="message">{message}</div>}
       <form onSubmit={handleLogin}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Enter Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
+        <input type="email" placeholder="Enter Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input type="password" placeholder="Enter Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <button type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
       </form>
-
-      <p>
-        Don't have an account? <Link to="/">Signup</Link>
-      </p>
-
-      {message && <p className="message">{message}</p>}
+      <p className="link">Don't have an account? <Link to="/">Signup</Link></p>
     </div>
   );
 }
